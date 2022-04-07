@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+ul {
+  display: flex;
+  margin: 0;
+}
+li {
+  list-style-type: none;
+  padding: 5px;
+  border: 1px solid black;
+}
+.redStone {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  background-color: red;
+}
+.whiteStone {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  background-color: rgb(191, 191, 191);
+}
+.transperantStone {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  background-color: transparent;
+}
+.selected {
+  background-color: green;
+}
