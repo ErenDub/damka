@@ -1,6 +1,4 @@
-let board = document.getElementById('board') //ვიღებთ ელემენტს სადაც გამოვიტანთ დაფას
 let table = [
-  //ობიექტების მასივი რომელიც დაფაზე ქვების განლაგებას და ცაიელ ადგილებს განაგებს
   {
     x: 0,
     y: 0,
@@ -322,211 +320,99 @@ let table = [
     fill: 'none',
   },
 ]
-let playing = true //true => თამაშობს თეთრი ქვები | false თამაშობს წითელი ქვები
-const createBoard = () => {
-  //დაფის შექმნის ფუნქცია, ის ზემოთ გამოცხადებულ board ცვლადში ალაგებს ul, li თეგებს. გამოყენებულია appentChild
-  let index = 0
-  for (let i = 0; i < 8; i++) {
-    let ul = document.createElement('ul')
+let board = document.getElementById('board')
 
-    for (let j = 0; j < 8; j++) {
-      let li = document.createElement('li')
+class createBoardClass {
+  // constructor(name, year) {
+  //   this.name = name;
+  //   this.year = year;
+  // }
 
-      let text = document.createTextNode(
-        `${table[index].x} , ${table[index].y}`,
-      )
-      li.appendChild(text)
-      ul.appendChild(li)
-      index++
-    }
-    board.appendChild(ul)
-  }
-  boardColor()
-}
-
-const boardColor = () => {
-  //ზემოთ ჩაყრილ li თეგებში, მასივის მიხედვით ვალაგებთ div-ებს რომლებსაც გაწერილი აქვთ თავიანთი კლასები და ქლიქზე გამოსაძახებელი ფუნქციები
-  let li = document.querySelectorAll('li')
-  let startColor = false
-  for (let i = 0; i < li.length; i++) {
-    if (startColor) {
-      if (i % 2 === 0) {
-        li[i].style.backgroundColor = 'black'
-        li[i].style.color = 'white'
-      }
-    } else {
-      if (i % 2 !== 0) {
-        li[i].style.backgroundColor = 'black'
-        li[i].style.color = 'white'
-      }
-    }
-    if ((i + 1) % 8 === 0) startColor = !startColor
-
-    if (table[i].fill === 'red') {
-      li[
-        i
-      ].innerHTML = `<div class="redStone" onclick=redMove(this) data=${i}></div>`
-    } else if (table[i].fill === 'white') {
-      li[
-        i
-      ].innerHTML = `<div class="whiteStone" onclick=whiteMove(this) data=${i}></div>`
-    } else {
-      li[
-        i
-      ].innerHTML = `<div onclick=emptyClick(this) class="transperantStone" data=${i}></div>`
-    }
-  }
-}
-let choosen = 0 //აქ ვირჩევთ არჩეული ქვის ინდექსს
-let positions = {
-  //აქ ვინახავთ გადასაადგილებელი ადგილის პოზიციის კოორდინატებს
-  a: 0,
-  b: 0,
-}
-let deleteStone //აქ ვინახავთ მოსაკლავი ქვის ინდექსს
-
-const deleteStoneFunc = (index, pos) => {
-  //აქ deleteStone-ში ვინახავთ მოსაკლავი ქვის ინდექსს და გადაადგილების პოზიციას
-  deleteStone = { index, pos }
-}
-
-const checkKill = (index) => {
-  let li = document.querySelectorAll('li')
-  let x = table[index].x //გადასაადგილებელი ადგილის ინდექსის მიხედვით კოორდინატების გატკვევა
-  let y = table[index].y
-  let stone = table[index].fill //ვამოწმებთ მოსული ინდექსის მიხედვით რაფერის ქვა დევს მოსაკლავისპოზიციაზე
-  let a = 1 //ეს არის ცვლადები, რომელთაგან ორ-ორი განკუთვნილია კონკრეტული ფერისთვის. სამომავლოდ ბევრი ქვის მოსაკლავად მისი რაოდენობა გაიზრდებო სვლებთან ერთად.
-  let b = 1
-  let c = 1
-  let d = 1
-  const redStone = (color) => {
-    //აქ მწვანდება ის წერტილის სადაც ქვის მოკვლის შემთხვევაში დაჯდება ქვა და ინახება იმ ქვის ინდექსი რომელიც უნდა მოკვდეს
+  boardColor() {
+    let li = document.querySelectorAll('li')
+    let startColor = false
     for (let i = 0; i < li.length; i++) {
-      if (x + a === table[i].x && y - b === table[i].y) {
-        if (table[i].fill === 'none') {
-          li[i].style.backgroundColor = 'green'
-          positions.a = i
-        } else if (table[i].fill !== color) {
-          deleteStone = i
-          a++
-          b++
-          redStone(color)
+      if (startColor) {
+        if (i % 2 === 0) {
+          li[i].style.backgroundColor = 'black'
+          li[i].style.color = 'white'
         }
-      } else if (x + c === table[i].x && y + d === table[i].y) {
-        if (table[i].fill === 'none') {
-          li[i].style.backgroundColor = 'green'
-          positions.b = i
-        } else if (table[i].fill !== color) {
-          deleteStone = i
+      } else {
+        if (i % 2 !== 0) {
+          li[i].style.backgroundColor = 'black'
+          li[i].style.color = 'white'
+        }
+      }
+      if ((i + 1) % 8 === 0) startColor = !startColor
 
-          c++
-          d++
-          redStone(color)
-        }
+      if (table[i].fill === 'red') {
+        li[
+          i
+        ].innerHTML = `<div class="redStone" onclick=callMoveStone.moveSide(this) data=${i}></div>`
+      } else if (table[i].fill === 'white') {
+        li[
+          i
+        ].innerHTML = `<div class="whiteStone" onclick=callMoveStone.moveSide(this) data=${i}></div>`
+      } else {
+        li[
+          i
+        ].innerHTML = `<div onclick=emptyClick(this) class="transperantStone" data=${i}></div>`
       }
     }
   }
-  const whiteStone = (color) => {
-    //აქაც იგივე რაც ზემოთ
-    for (let i = 0; i < li.length; i++) {
-      if (x - a === table[i].x && y - b === table[i].y) {
-        if (table[i].fill === 'none') {
-          li[i].style.backgroundColor = 'green'
-          positions.a = i
-        } else if (table[i].fill !== color) {
-          deleteStone = i
+  createBoard() {
+    let index = 0
+    for (let i = 0; i < 8; i++) {
+      let ul = document.createElement('ul')
 
-          a++
-          b++
-          whiteStone(color)
-        }
-      } else if (x - c === table[i].x && y + d === table[i].y) {
-        if (table[i].fill === 'none') {
-          li[i].style.backgroundColor = 'green'
-          positions.b = i
-        } else if (table[i].fill !== color) {
-          deleteStone = i
+      for (let j = 0; j < 8; j++) {
+        let li = document.createElement('li')
 
-          c++
-          d++
-          whiteStone(color)
-        }
+        let text = document.createTextNode(
+          `${table[index].x} , ${table[index].y}`,
+        )
+        li.appendChild(text)
+        ul.appendChild(li)
+        index++
       }
+      board.appendChild(ul)
     }
-  }
-
-  if (stone === 'red') {
-    //ქვის ფერის მიხედვით იძახებს შესაბამის ფუნქციას
-    redStone('red')
-  } else if (stone === 'white') {
-    whiteStone('white')
+    this.boardColor()
   }
 }
 
-const redMove = (element) => {
-  //სვლის გაკეთებისას ვანახლებთ დაფას, რათ
-  boardColor()
-  positions = {
-    //ვანულებთ მონაცემებს
-    a: 0,
-    b: 0,
-  }
-  let index = element.getAttribute('data') //ვიღებთ ინდექსს მოსული ელემენტიდან
-  choosen = index
+let callCreateBoardClass = new createBoardClass()
+callCreateBoardClass.createBoard()
 
-  if (!playing) {
-    checkKill(index) //ცამოწმებთ შეიძლება თუ არა რაიმეს მოკლვა
+let li = document.querySelectorAll('li')
+console.log(li)
+class moveStone {
+  constructor() {
+    this.x = 0
+    this.y = 1
   }
-}
-const whiteMove = (element) => {
-  //იგივე რაც ზემოთ
-  boardColor()
-  positions = {
-    a: 0,
-    b: 0,
-  }
-  let index = element.getAttribute('data')
-  choosen = index
-
-  if (playing) {
-    checkKill(index)
-  }
-}
-
-const emptyClick = (element) => {
-  //აქ ხდება ქვის გადაადგილება, მოწმდება შეიძლება თუ არ აკონკრეტულ ცარიელ კუბზე ქმის დასმა და შემდეგ ხდება მისი გადაადგილება
-  let index = element.getAttribute('data')
-  let empty = table[index].fill
-  let stone = table[choosen].fill
-  if (stone === 'white' && playing) {
-    if (
-      JSON.parse(index) === positions.a ||
-      JSON.parse(index) === positions.b
-    ) {
-      table[index].fill = stone
-      table[choosen].fill = empty
-      deleteStone && (table[deleteStone].fill = empty)
-      deleteStone = undefined
-      playing = !playing
+  moveSide(element) {
+    let color = element.getAttribute('class')
+    let index = element.getAttribute('data')
+    if (color === 'redStone') {
+      this.x = 1
+    } else {
+      this.x = -1
     }
-  } else if (stone === 'red' && !playing) {
-    if (
-      JSON.parse(index) === positions.a ||
-      JSON.parse(index) === positions.b
-    ) {
-      table[index].fill = stone
-      table[choosen].fill = empty
-      deleteStone && (table[deleteStone].fill = empty)
-      deleteStone = undefined
-
-      playing = !playing
-    }
+    this.glowSquare(index)
   }
-  positions = {
-    a: 0,
-    b: 0,
+  glowSquare(index) {
+    console.log(this.x, this.y)
+    table.forEach((obj, i) => {
+      console.log(i)
+      if (
+        obj.x === table[index].x + this.x &&
+        (table[index].y + 1 || table[index].y - 1)
+      ) {
+        // li[i].style.backgroundColor = 'green'
+        console.log(index, i)
+      }
+    })
   }
-  boardColor() //ნახლდება დაფა
 }
-
-createBoard()
+let callMoveStone = new moveStone()
