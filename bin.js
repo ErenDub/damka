@@ -356,7 +356,7 @@ class createBoardClass {
       } else {
         li[
           i
-        ].innerHTML = `<div onclick=emptyClick(this) class="transperantStone" data=${i}></div>`
+        ].innerHTML = `<div onclick=callMoveStone.chooseSquare(this) class="transperantStone" data=${i}></div>`
       }
     }
   }
@@ -384,35 +384,93 @@ class createBoardClass {
 let callCreateBoardClass = new createBoardClass()
 callCreateBoardClass.createBoard()
 
-let li = document.querySelectorAll('li')
-console.log(li)
-class moveStone {
+class gameRusels {
   constructor() {
     this.x = 0
     this.y = 1
   }
-  moveSide(element) {
-    let color = element.getAttribute('class')
-    let index = element.getAttribute('data')
+  moveSquare(color, index) {
+    let indexes = []
     if (color === 'redStone') {
       this.x = 1
     } else {
       this.x = -1
     }
-    this.glowSquare(index)
-  }
-  glowSquare(index) {
-    console.log(this.x, this.y)
+
     table.forEach((obj, i) => {
-      console.log(i)
       if (
         obj.x === table[index].x + this.x &&
-        (table[index].y + 1 || table[index].y - 1)
+        (obj.y === table[index].y + this.y || obj.y === table[index].y - this.y)
       ) {
-        // li[i].style.backgroundColor = 'green'
-        console.log(index, i)
+        if (obj.fill === 'none') indexes.push(i)
+        else if (obj.fill !== table[index].fill) {
+          let side = false //false aris marcxena
+          if (obj.y > table[index].y) {
+            side = true
+          }
+
+          table.forEach((obj2, j) => {
+            if (side) {
+              if (
+                obj2.x === table[index].x + this.x * 2 &&
+                obj2.y === table[index].y + this.y * 2
+              ) {
+                indexes.push(j)
+                console.log(j, '111aaa')
+              }
+            } else {
+              console.log('ess')
+              if (
+                obj2.x === table[index].x + this.x * 2 &&
+                obj2.y === table[index].y - this.y * 2
+              ) {
+                indexes.push(j)
+                console.log(j, 'aaa')
+              }
+            }
+          })
+        }
       }
     })
+    return indexes
+  }
+}
+let callGameRusels = new gameRusels()
+
+let li = document.querySelectorAll('li')
+class moveStone {
+  constructor() {
+    this.stoneIndex = -1
+    this.squareIndexes = []
+  }
+  moveSide(element) {
+    callCreateBoardClass.boardColor()
+    let color = element.getAttribute('class')
+    let index = element.getAttribute('data')
+
+    this.glowSquare(index, color)
+  }
+  glowSquare(index, color) {
+    let indexes = callGameRusels.moveSquare(color, index)
+    this.squareIndexes = indexes
+    console.log(indexes)
+    indexes.forEach((obj) => {
+      li[obj].style.backgroundColor = 'green'
+    })
+    this.stoneIndex = index
+  }
+  chooseSquare(element) {
+    let index = JSON.parse(element.getAttribute('data'))
+
+    console.log(this.stoneIndex)
+    this.squareIndexes.forEach((obj) => {
+      console.log(obj, '---', index)
+      if (obj === index) {
+        table[index].fill = table[this.stoneIndex].fill
+        table[this.stoneIndex] = 'none'
+      }
+    })
+    callCreateBoardClass.boardColor()
   }
 }
 let callMoveStone = new moveStone()
