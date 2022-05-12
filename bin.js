@@ -322,7 +322,8 @@ let table = [
 ]
 //ქვების განგალეგების JSON
 let board = document.getElementById('board') //div ელემენტი რომელშიც დავარენდერებთ დამკის დაფას
-
+let player = false //false-ზე თამაშობენ თეთრი ქვები
+let afterKill = false //თრუვდება მოკვლის შემდეგ სვლის გაკეთებისას
 class createBoardClass {
   //დამკის დაფის გენერატორი
   // constructor(name, year) {
@@ -390,42 +391,47 @@ class gameRusels {
     this.y = 1
   }
   moveSquare(color, index) {
-    let indexes = []
+    let indexes = { square: [], killStone: [] }
     if (color === 'redStone') {
       // თუ უნდა გადავაადგილოთ წითელი ქვა, მაშინ მისი x კოორდინატა უნდა გაიზარდოს 1-ით, თეთრი ქვის შემთხვევაში კი უნდა შემცირდეს.
       this.x = 1
     } else {
       this.x = -1
     }
-
     table.forEach((obj, i) => {
       // ამ ციკლს ვატრიალებთ რათა ვიპოვოთ იმ უჯრების ინდექსები რომელზეც ქვას აქვს გადასვლის უფლება. ამ ინდექსებს კი ვარეთურნებთ რათა შემდეგ გამოვიყენოთ სხვა ფუინქციებში
       if (
         obj.x === table[index].x + this.x &&
         (obj.y === table[index].y + this.y || obj.y === table[index].y - this.y)
       ) {
-        console.log(table[index], obj)
-        if (obj.fill === 'none') indexes.push(i)
-        else if (obj.fill !== table[index].fill) {
+        if (obj.fill === 'none' && !afterKill) {
+          indexes.square.push(i)
+          indexes.killStone.push('none')
+        } else if (obj.fill !== table[index].fill) {
           let side = false //false არის მარცხნეა
           if (obj.y > table[index].y) {
             side = true
           }
-
           table.forEach((obj2, j) => {
             if (side) {
               if (
                 obj2.x === table[index].x + this.x * 2 &&
                 obj2.y === table[index].y + this.y * 2
               ) {
-                if (obj2.fill === 'none') indexes.push(j)
+                if (obj2.fill === 'none') {
+                  indexes.square.push(j)
+                  indexes.killStone.push(i)
+                }
               }
             } else {
               if (
                 obj2.x === table[index].x + this.x * 2 &&
                 obj2.y === table[index].y - this.y * 2
               ) {
-                if (obj2.fill === 'none') indexes.push(j)
+                if (obj2.fill === 'none') {
+                  indexes.square.push(j)
+                  indexes.killStone.push(i)
+                }
               }
             }
           })
@@ -442,19 +448,21 @@ class moveStone {
   // ეს კლასი პასუხს აგებს ქვის გადაადგილებაზე და უჯრის გამწვანებაზე
   constructor() {
     this.stoneIndex = -1 // აქ ინახება იმ ქვის ინდექსი რომელსაც გადავაადგილებთ
-    this.squareIndexes = [] // აქ კი ზემოთა gameRules ფუნქციით დარეთურნებული უჯრების ინდექსები
+    this.moveIndex = [] // აქ კი ზემოთა gameRules ფუნქციით დარეთურნებული უჯრების ინდექსები
   }
   moveSide(element) {
     callCreateBoardClass.boardColor()
     let color = element.getAttribute('class') //მოსული ელემენტიდან ვიღებთ კლასის სახელს რაც არის მასში არსებული ფერის დასახელებაც და ვიღებთ data-ს რომელშიც ინახება ინდექსი
     let index = element.getAttribute('data')
-
-    this.glowSquare(index, color) // შემდეგ ვიძახებთ უჯრის გამწვანების ფუნქციას
+    if ((!player && color === 'whiteStone') || (player && color === 'redStone'))
+      if (afterKill) {
+        player = !player
+      } else this.glowSquare(index, color) // შემდეგ ვიძახებთ უჯრის გამწვანების ფუნქციას
   }
   glowSquare(index, color) {
     let indexes = callGameRusels.moveSquare(color, index) // აქ ვიძახებთ gameRules და ვიღებთ შესაბამის ინდექსებს სადაც ქვას გადაადგილება შეუძლია
-    this.squareIndexes = indexes // ვინახავთ გადასაადგილებელი ქვის ინდექსს
-    indexes.forEach((obj) => {
+    this.moveIndex = indexes // ვინახავთ გადასაადგილებელი ქვის ინდექსს
+    indexes.square.forEach((obj) => {
       // ვატრიელბთ ინდექსის სიგრძის ციკლს და ვამწვანებთ მოსული ინდექსების მიხედვით უჯრებს
       li[obj].style.backgroundColor = 'green'
     })
@@ -462,14 +470,50 @@ class moveStone {
   }
   chooseSquare(element) {
     let index = JSON.parse(element.getAttribute('data')) //აქ არჩეულ უჯრაში ხდება ქვის გადაადგილება
-    this.squareIndexes.forEach((obj) => {
+    let killedStone = false
+    let movementDone = false
+    this.moveIndex.square.forEach((obj, i) => {
       //ვატრიელებთ ციკლს, და არჩეულ უჯრის fill ცვლადს ვანიჭებთ შესაბამის ქვის ფერს, ხოლო ქვის ძველ უჯრას none-ს.
       if (obj === index) {
         table[index].fill = table[this.stoneIndex].fill
         table[this.stoneIndex].fill = 'none'
+        if (
+          this.moveIndex.killStone.length > 0 &&
+          this.moveIndex.killStone[i] !== 'none'
+        ) {
+          table[this.moveIndex.killStone[i]].fill = 'none'
+          killedStone = true
+          afterKill = true
+        }
+        movementDone = true
       }
     })
-    callCreateBoardClass.boardColor() //ვიძახებთ ქვების ჩალაგების ფუნქციას რათა განახლებული დაფა დარენდერდეს
+    if (movementDone) {
+      callCreateBoardClass.boardColor() //ვიძახებთ ქვების ჩალაგების ფუნქციას რათა განახლებული დაფა დარენდერდეს
+      if (!killedStone) {
+        player = !player
+        this.moveIndex = []
+        afterKill = false
+      } else {
+        let color = ''
+        if (table[index].fill === 'white') {
+          color = 'whiteStone'
+        } else {
+          color = 'redStone'
+        }
+
+        let checkKillStone = callGameRusels.moveSquare(color, index)
+        console.log(checkKillStone)
+        if (checkKillStone.killStone.length > 0) {
+          this.glowSquare(index, color)
+          this.moveIndex = []
+        } else {
+          player = !player
+          this.moveIndex = []
+          afterKill = false
+        }
+      }
+    }
   }
 }
 let callMoveStone = new moveStone()
