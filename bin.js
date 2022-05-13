@@ -448,7 +448,7 @@ class moveStone {
   // ეს კლასი პასუხს აგებს ქვის გადაადგილებაზე და უჯრის გამწვანებაზე
   constructor() {
     this.stoneIndex = -1 // აქ ინახება იმ ქვის ინდექსი რომელსაც გადავაადგილებთ
-    this.moveIndex = [] // აქ კი ზემოთა gameRules ფუნქციით დარეთურნებული უჯრების ინდექსები
+    this.moveIndex = {} // აქ კი ზემოთა gameRules ფუნქციით დარეთურნებული უჯრების ინდექსები
   }
   moveSide(element) {
     callCreateBoardClass.boardColor()
@@ -492,7 +492,7 @@ class moveStone {
       callCreateBoardClass.boardColor() //ვიძახებთ ქვების ჩალაგების ფუნქციას რათა განახლებული დაფა დარენდერდეს
       if (!killedStone) {
         player = !player
-        this.moveIndex = []
+        this.moveIndex = {}
         afterKill = false
       } else {
         let color = ''
@@ -501,15 +501,13 @@ class moveStone {
         } else {
           color = 'redStone'
         }
-
         let checkKillStone = callGameRusels.moveSquare(color, index)
         console.log(checkKillStone)
         if (checkKillStone.killStone.length > 0) {
           this.glowSquare(index, color)
-          this.moveIndex = []
         } else {
           player = !player
-          this.moveIndex = []
+          this.moveIndex = {}
           afterKill = false
         }
       }
